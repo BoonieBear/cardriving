@@ -1,0 +1,122 @@
+/* ========== 全局重置 ========== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  background: #0a0a0f;
+  color: #e0e0e0;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* ========== 模式选择器 ========== */
+.mode-selector {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 50%, #0f0f23 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.mode-selector-inner {
+  text-align: center;
+  padding: 40px;
+  max-width: 600px;
+  width: 90%;
+}
+
+.mode-title {
+  font-size: 48px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #00d4ff, #7b2ff7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 8px;
+  letter-spacing: 2px;
+}
+
+.mode-subtitle {
+  font-size: 16px;
+  color: #888;
+  margin-bottom: 40px;
+}
+
+.mode-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.mode-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 24px 32px;
+  border: 2px solid #333;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  color: #e0e0e0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.mode-btn:hover {
+  transform: translateY(-2px);
+  border-color: #00d4ff;
+  background: rgba(0, 212, 255, 0.08);
+  box-shadow: 0 8px 32px rgba(0, 212, 255, 0.15);
+}
+
+.mode-btn:active {
+  transform: translateY(0);
+}
+
+.mode-btn-icon {
+  font-size: 36px;
+}
+
+.mode-btn-text {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.mode-btn-desc {
+  font-size: 13px;
+  color: #888;
+}
+
+.mode-tip {
+  font-size: 12px;
+  color: #555;
+}
+
+/* ========== 通用按钮 ========== */
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  outline: none;
+}
+
+input {
+  font-family: inherit;
+  outline: none;
+}

@@ -1,0 +1,405 @@
+/* ========== 大屏主机端 UI ========== */
+.host-ui {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+}
+
+#canvas-container {
+  position: absolute;
+  inset: 0;
+}
+
+#canvas-container canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* ========== 房间信息面板 ========== */
+.room-panel {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 420px;
+  background: rgba(10, 10, 20, 0.92);
+  border: 1px solid rgba(0, 212, 255, 0.3);
+  border-radius: 16px;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 8px 48px rgba(0, 0, 0, 0.5);
+  z-index: 100;
+  overflow: hidden;
+}
+
+.room-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  background: rgba(0, 212, 255, 0.08);
+  border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+}
+
+.room-panel-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #00d4ff;
+}
+
+.room-connection-state {
+  font-size: 13px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-weight: 600;
+}
+
+.room-connection-state.waiting {
+  background: rgba(255, 193, 7, 0.15);
+  color: #ffc107;
+}
+
+.room-connection-state.connected {
+  background: rgba(76, 175, 80, 0.15);
+  color: #4caf50;
+}
+
+.room-panel-body {
+  padding: 24px;
+}
+
+.room-code-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.room-code-label {
+  font-size: 15px;
+  color: #aaa;
+}
+
+.room-code-display {
+  font-size: 36px;
+  font-weight: 800;
+  letter-spacing: 8px;
+  color: #00d4ff;
+  font-family: 'Courier New', monospace;
+  text-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
+}
+
+.room-secret-row {
+  margin-bottom: 16px;
+}
+
+.room-secret-label {
+  display: block;
+  font-size: 14px;
+  color: #aaa;
+  margin-bottom: 8px;
+}
+
+.room-secret-input-group {
+  display: flex;
+  gap: 8px;
+}
+
+.room-secret-input {
+  flex: 1;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid #333;
+  border-radius: 8px;
+  color: #e0e0e0;
+  font-size: 14px;
+  transition: border-color 0.2s;
+}
+
+.room-secret-input:focus {
+  border-color: #00d4ff;
+}
+
+.btn-apply-secret {
+  padding: 10px 18px;
+  background: linear-gradient(135deg, #00d4ff, #0099cc);
+  color: #000;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  transition: opacity 0.2s;
+  white-space: nowrap;
+}
+
+.btn-apply-secret:hover {
+  opacity: 0.9;
+}
+
+.room-hint {
+  font-size: 12px;
+  color: #666;
+  text-align: center;
+  margin-top: 8px;
+}
+
+/* ========== 二维码 ========== */
+.qr-container {
+  margin-top: 16px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  text-align: center;
+}
+
+.qr-title {
+  font-size: 13px;
+  color: #00d4ff;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.qr-canvas {
+  display: block;
+  margin: 0 auto;
+  border-radius: 6px;
+  background: #fff;
+  padding: 4px;
+}
+
+.qr-url-text {
+  font-size: 10px;
+  color: #555;
+  margin-top: 6px;
+  word-break: break-all;
+  font-family: 'Courier New', monospace;
+}
+
+/* ========== 帧率显示 ========== */
+.fps-display {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  font-size: 13px;
+  font-family: 'Courier New', monospace;
+  color: rgba(255, 255, 255, 0.6);
+  z-index: 50;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+}
+
+/* ========== 开发者调试面板 ========== */
+.debug-panel {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  width: 260px;
+  background: rgba(0, 0, 0, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  z-index: 200;
+  font-size: 12px;
+  backdrop-filter: blur(8px);
+}
+
+.debug-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px 10px 0 0;
+  font-weight: 700;
+  color: #00d4ff;
+}
+
+.debug-hint {
+  font-size: 10px;
+  color: #888;
+  font-weight: 400;
+}
+
+.debug-body {
+  padding: 10px 12px;
+}
+
+.debug-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 3px 0;
+}
+
+.debug-label {
+  color: #888;
+}
+
+.debug-value {
+  color: #e0e0e0;
+  font-family: 'Courier New', monospace;
+  font-weight: 600;
+}
+
+.debug-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+  margin: 6px 0;
+}
+
+/* ========== 断线提示 ========== */
+.disconnect-toast {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 16px 32px;
+  background: rgba(255, 87, 34, 0.9);
+  color: #fff;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  z-index: 150;
+  box-shadow: 0 4px 24px rgba(255, 87, 34, 0.4);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* ========== 驾驶模式切换栏 ========== */
+.drive-mode-bar {
+  position: absolute;
+  left: 50%;
+  bottom: 20px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: rgba(10, 10, 20, 0.78);
+  border: 1px solid rgba(0, 212, 255, 0.22);
+  border-radius: 14px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 6px 28px rgba(0, 0, 0, 0.45);
+  z-index: 60;
+  transition: border-color 0.25s, box-shadow 0.25s;
+}
+
+/* 进入自动驾驶时整条栏高亮，沉浸模式下也能一眼看出状态 */
+.drive-mode-bar[data-mode="assist"] {
+  border-color: rgba(255, 193, 7, 0.65);
+  box-shadow: 0 6px 28px rgba(255, 193, 7, 0.28);
+}
+
+.drive-mode-bar[data-mode="auto"] {
+  border-color: rgba(0, 229, 255, 0.75);
+  animation: modeGlow 2s ease-in-out infinite;
+}
+
+@keyframes modeGlow {
+  0%, 100% { box-shadow: 0 6px 28px rgba(0, 229, 255, 0.22); }
+  50% { box-shadow: 0 6px 34px rgba(0, 229, 255, 0.5); }
+}
+
+.drive-mode-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  color: #bbb;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.drive-mode-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #eee;
+}
+
+.drive-mode-btn.active[data-mode="manual"] {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.45);
+  color: #fff;
+}
+
+.drive-mode-btn.active[data-mode="assist"] {
+  background: rgba(255, 193, 7, 0.2);
+  border-color: #ffc107;
+  color: #ffc107;
+  box-shadow: 0 0 14px rgba(255, 193, 7, 0.35);
+}
+
+.drive-mode-btn.active[data-mode="auto"] {
+  background: rgba(0, 229, 255, 0.2);
+  border-color: #00e5ff;
+  color: #00e5ff;
+  box-shadow: 0 0 14px rgba(0, 229, 255, 0.45);
+}
+
+.drive-mode-icon {
+  font-size: 15px;
+  line-height: 1;
+}
+
+.drive-mode-hint {
+  font-size: 10px;
+  color: #666;
+  padding: 0 6px;
+  white-space: nowrap;
+}
+
+/* 小屏时隐藏文字提示，只保留按钮 */
+@media (max-width: 760px) {
+  .drive-mode-hint { display: none; }
+  .drive-mode-name { display: none; }
+  .drive-mode-btn { padding: 8px 12px; }
+}
+
+/* ========== 驾驶模式切换提示 ========== */
+.drive-mode-toast {
+  position: absolute;
+  top: 22%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.9);
+  padding: 14px 40px;
+  border-radius: 14px;
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: 3px;
+  z-index: 160;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s, transform 0.3s;
+  background: rgba(10, 10, 20, 0.85);
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  color: #fff;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.6);
+}
+
+.drive-mode-toast.show {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.drive-mode-toast[data-mode="assist"] {
+  border-color: #ffc107;
+  color: #ffc107;
+  box-shadow: 0 0 34px rgba(255, 193, 7, 0.45);
+}
+
+.drive-mode-toast[data-mode="auto"] {
+  border-color: #00e5ff;
+  color: #00e5ff;
+  box-shadow: 0 0 34px rgba(0, 229, 255, 0.5);
+}
+
+.drive-mode-toast[data-mode="manual"] {
+  border-color: rgba(255, 255, 255, 0.45);
+  color: #e0e0e0;
+}

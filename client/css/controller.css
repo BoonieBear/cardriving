@@ -1,0 +1,870 @@
+/* ========== 手机控制器端 UI —— 机械控制台风格 ========== */
+
+/*
+ * 设计语言：
+ *  - 面板    ：深色阳极氧化铝 + 碳纤维纹理 + 四角螺钉
+ *  - 读数    ：琥珀色数码管 / LCD
+ *  - 操控件  ：金属方向盘、铰接踏板、挡位闸
+ * 所有「机械运动」都用 CSS 变量驱动，JS 只负责写入变量值。
+ */
+
+.controller-ui {
+  --metal-hi: #9aa2ad;
+  --metal-mid: #5b636e;
+  --metal-lo: #2a2e35;
+  --panel: #14161b;
+  --panel-edge: rgba(255, 255, 255, 0.09);
+  --amber: #ffb020;
+  --cyan: #35d6ff;
+  --red: #ff4d4d;
+  --green: #4ade80;
+
+  position: fixed;
+  inset: 0;
+  background:
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.012) 0 2px, transparent 2px 4px),
+    repeating-linear-gradient(-45deg, rgba(0, 0, 0, 0.18) 0 2px, transparent 2px 4px),
+    linear-gradient(180deg, #0c0d11 0%, #15171d 55%, #0a0b0e 100%);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  color: #e6e9ee;
+}
+
+/* ========== 连接面板 ========== */
+.conn-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 32px 28px;
+  max-width: 420px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.conn-title {
+  font-size: 26px;
+  font-weight: 800;
+  text-align: center;
+  margin-bottom: 28px;
+  letter-spacing: 6px;
+  color: #cfd6e0;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.12), 0 -1px 0 rgba(0, 0, 0, 0.7);
+}
+
+.conn-field {
+  margin-bottom: 18px;
+}
+
+.conn-label {
+  display: block;
+  font-size: 11px;
+  color: #7d8794;
+  margin-bottom: 8px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+}
+
+.conn-input {
+  width: 100%;
+  padding: 14px 16px;
+  background: linear-gradient(180deg, #0a0b0e, #14161b);
+  border: 1px solid #333a44;
+  border-radius: 8px;
+  color: var(--amber);
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 4px;
+  text-align: center;
+  font-family: 'Courier New', monospace;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.8), 0 1px 0 rgba(255, 255, 255, 0.05);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.conn-input:focus {
+  border-color: var(--cyan);
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.8), 0 0 0 2px rgba(53, 214, 255, 0.18);
+}
+
+.conn-error {
+  background: rgba(244, 67, 54, 0.14);
+  border-left: 3px solid var(--red);
+  color: #ff8a80;
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+/* 金属按钮：顶部高光 + 底部阴影，按下有行程 */
+.btn-connect {
+  width: 100%;
+  padding: 16px;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 6px;
+  color: #06202b;
+  background: linear-gradient(180deg, #7fe8ff 0%, #35d6ff 45%, #0b90b8 100%);
+  border: 1px solid #0b90b8;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    inset 0 -3px 6px rgba(0, 0, 0, 0.25),
+    0 4px 0 #075f7c,
+    0 8px 18px rgba(0, 0, 0, 0.55);
+  transition: transform 0.06s, box-shadow 0.06s, opacity 0.2s;
+  margin-bottom: 16px;
+}
+
+.btn-connect:active {
+  transform: translateY(3px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    inset 0 -2px 6px rgba(0, 0, 0, 0.3),
+    0 1px 0 #075f7c,
+    0 3px 10px rgba(0, 0, 0, 0.5);
+}
+
+.btn-connect:disabled {
+  opacity: 0.45;
+}
+
+.conn-tip {
+  font-size: 12px;
+  color: #5c6470;
+  text-align: center;
+  line-height: 1.6;
+}
+
+/* ========== 仪表盘外壳 ========== */
+.dashboard {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: calc(6px + env(safe-area-inset-top)) 10px calc(8px + env(safe-area-inset-bottom));
+  max-width: 560px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* 四角螺钉：机械面板的关键细节 */
+.dashboard::before,
+.dashboard::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 12px;
+  left: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 14px 6px, #8b939e 0 3px, #454b54 3px 4px, transparent 4.5px),
+    radial-gradient(circle at calc(100% - 14px) 6px, #8b939e 0 3px, #454b54 3px 4px, transparent 4.5px);
+}
+
+.dashboard::before { top: 2px; }
+.dashboard::after { bottom: 2px; }
+
+/* ========== 顶部仪表条 ========== */
+.dash-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 14px;
+  margin-top: 8px;
+  border-radius: 10px;
+  background:
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.022) 0 1px, transparent 1px 3px),
+    linear-gradient(180deg, #23272e, #14171c);
+  border: 1px solid var(--panel-edge);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    inset 0 -2px 6px rgba(0, 0, 0, 0.55),
+    0 3px 10px rgba(0, 0, 0, 0.5);
+}
+
+.dash-connect {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  letter-spacing: 1px;
+  color: #8b939e;
+}
+
+.connect-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #3a3f47;
+  box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.9);
+}
+
+.connect-dot.connected {
+  background: radial-gradient(circle at 35% 35%, #b6ffcf, var(--green) 60%, #12803c);
+  box-shadow: 0 0 10px rgba(74, 222, 128, 0.75), inset 0 0 2px rgba(0, 0, 0, 0.5);
+}
+
+.connect-dot.disconnected {
+  background: radial-gradient(circle at 35% 35%, #ffb3b3, var(--red) 60%, #7f1010);
+  box-shadow: 0 0 8px rgba(255, 77, 77, 0.6);
+}
+
+.dash-speed {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+}
+
+/* 数码管读数 */
+.dash-speed-value {
+  font-size: 34px;
+  font-weight: 800;
+  color: var(--amber);
+  font-family: 'Courier New', monospace;
+  line-height: 1;
+  text-shadow: 0 0 12px rgba(255, 176, 32, 0.55), 0 0 2px rgba(255, 220, 150, 0.9);
+  padding: 2px 8px;
+  border-radius: 5px;
+  background: linear-gradient(180deg, #0a0b0e, #16181d);
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.85), inset 0 -1px 0 rgba(255, 255, 255, 0.05);
+  min-width: 78px;
+  text-align: right;
+}
+
+.dash-speed-unit {
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: #7d8794;
+}
+
+.dash-gear {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.dash-gear-label {
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: #7d8794;
+}
+
+.dash-gear-value {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--cyan);
+  font-family: 'Courier New', monospace;
+  line-height: 1;
+  min-width: 34px;
+  text-align: center;
+  padding: 2px 6px;
+  border-radius: 5px;
+  background: linear-gradient(180deg, #0a0b0e, #16181d);
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.85);
+  text-shadow: 0 0 10px rgba(53, 214, 255, 0.6);
+}
+
+/* 漂移警示灯 */
+.dash-drift {
+  position: absolute;
+  top: 74px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 5px 18px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 4px;
+  color: #fff0f0;
+  background: linear-gradient(180deg, #ff6b4a, #c62828);
+  border: 1px solid #ff9a7a;
+  box-shadow: 0 0 18px rgba(255, 87, 34, 0.75);
+  z-index: 10;
+  animation: driftBlink 0.35s steps(2, end) infinite;
+}
+
+@keyframes driftBlink {
+  from { opacity: 1; }
+  to { opacity: 0.35; }
+}
+
+/* ========== 驾驶模式：顶部徽标 ========== */
+.dash-drive-mode {
+  position: absolute;
+  top: 74px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 5px 18px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 3px;
+  z-index: 11;
+  background: linear-gradient(180deg, #2a3038, #1a1e24);
+  border: 1px solid var(--panel-edge);
+  color: #c8d0da;
+}
+
+.dash-drive-mode[data-mode="assist"] {
+  color: #1a1a1a;
+  background: linear-gradient(180deg, #ffd54f, #ffa000);
+  border-color: #ffe082;
+  box-shadow: 0 0 18px rgba(255, 193, 7, 0.65);
+}
+
+.dash-drive-mode[data-mode="auto"] {
+  color: #04222a;
+  background: linear-gradient(180deg, #66f0ff, #00b8d4);
+  border-color: #84ffff;
+  box-shadow: 0 0 18px rgba(0, 229, 255, 0.7);
+  animation: autoPulse 1.6s ease-in-out infinite;
+}
+
+@keyframes autoPulse {
+  0%, 100% { box-shadow: 0 0 14px rgba(0, 229, 255, 0.5); }
+  50% { box-shadow: 0 0 26px rgba(0, 229, 255, 0.9); }
+}
+
+/* ========== 驾驶模式：切换按钮组 ========== */
+.ctrl-drive-mode {
+  display: flex;
+  gap: 8px;
+  padding: 10px 14px;
+  margin-top: 8px;
+  border-radius: 10px;
+  background:
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.022) 0 1px, transparent 1px 3px),
+    linear-gradient(180deg, #23272e, #14171c);
+  border: 1px solid var(--panel-edge);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    inset 0 -2px 6px rgba(0, 0, 0, 0.55),
+    0 3px 10px rgba(0, 0, 0, 0.5);
+}
+
+.ctrl-drive-mode-btn {
+  flex: 1;
+  padding: 11px 6px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #97a0ab;
+  background: linear-gradient(180deg, #2b3038, #1b1f25);
+  border: 1px solid #3a4048;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 2px 5px rgba(0, 0, 0, 0.45);
+  transition: all 0.18s;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.ctrl-drive-mode-btn:active {
+  transform: translateY(1px);
+}
+
+.ctrl-drive-mode-btn.active[data-mode="manual"] {
+  color: #e8edf3;
+  background: linear-gradient(180deg, #3a4048, #262b32);
+  border-color: #5a626c;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 0 12px rgba(255, 255, 255, 0.12);
+}
+
+.ctrl-drive-mode-btn.active[data-mode="assist"] {
+  color: #221a00;
+  background: linear-gradient(180deg, #ffd54f, #ff9800);
+  border-color: #ffe082;
+  box-shadow: 0 0 16px rgba(255, 193, 7, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.ctrl-drive-mode-btn.active[data-mode="auto"] {
+  color: #04222a;
+  background: linear-gradient(180deg, #66f0ff, #00acc1);
+  border-color: #84ffff;
+  box-shadow: 0 0 16px rgba(0, 229, 255, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+/* 自动驾驶时给仪表盘一个整体状态边框 */
+.dashboard.autonomous {
+  border-color: rgba(0, 229, 255, 0.35);
+}
+
+.dashboard.autonomous[data-drive-mode="assist"] {
+  border-color: rgba(255, 193, 7, 0.4);
+}
+
+/* 自动驾驶接管期间，方向盘/踏板区降低视觉权重 */
+.dashboard.autonomous .dash-middle,
+.dashboard.autonomous .gear-shifter,
+.dashboard.autonomous .dash-bottom {
+  opacity: 0.55;
+  transition: opacity 0.3s;
+}
+
+/* ========== 中部：方向盘 ========== */
+.dash-middle {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 0;
+}
+
+.steer-cluster {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 刻度环 */
+.steer-scale {
+  position: absolute;
+  width: calc(100% + 26px);
+  height: calc(100% + 26px);
+  border-radius: 50%;
+  background: repeating-conic-gradient(
+    from -120deg,
+    rgba(255, 255, 255, 0.38) 0deg 1.2deg,
+    transparent 1.2deg 12deg
+  );
+  -webkit-mask: radial-gradient(circle, transparent 0 86%, #000 86% 100%);
+  mask: radial-gradient(circle, transparent 0 86%, #000 86% 100%);
+  pointer-events: none;
+}
+
+/* 方向盘本体（JS 只改 transform: rotate()） */
+.steer-wheel {
+  position: relative;
+  width: min(38vw, 21vh, 168px);
+  height: min(38vw, 21vh, 168px);
+  border-radius: 50%;
+  transition: transform 0.05s linear;
+  will-change: transform;
+  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.65));
+}
+
+/* 轮辋：拉丝金属圈 */
+.steer-rim {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background:
+    conic-gradient(from 0deg,
+      #3d434c, #9aa2ad 10%, #333941 22%, #7e8791 36%,
+      #2c3138 50%, #98a1ac 64%, #343a42 78%, #8b939e 90%, #3d434c);
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.75),
+    inset 0 2px 3px rgba(255, 255, 255, 0.28),
+    0 3px 10px rgba(0, 0, 0, 0.6);
+}
+
+/* 内圈黑洞 */
+.steer-rim::after {
+  content: '';
+  position: absolute;
+  inset: 15px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 28%, #1c1f25, #0a0b0e 72%);
+  box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.9);
+}
+
+/* 辐条 */
+.steer-spoke {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  height: 13px;
+  width: 50%;
+  margin-top: -6.5px;
+  border-radius: 4px;
+  background: linear-gradient(180deg, #8b939e, #4a5058 55%, #2b3037);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), 0 1px 3px rgba(0, 0, 0, 0.6);
+  transform-origin: 0% 50%;
+}
+
+.steer-spoke-l { transform: rotate(196deg); }
+.steer-spoke-r { transform: rotate(-16deg); }
+.steer-spoke-b { transform: rotate(90deg); }
+
+/* 中央轮毂 */
+.steer-hub {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 40px;
+  height: 40px;
+  margin: -20px 0 0 -20px;
+  border-radius: 50%;
+  background: conic-gradient(from 45deg, #6c737d, #b8c0cb 20%, #565d66 45%, #a8b0bb 70%, #6c737d);
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.7),
+    inset 0 2px 4px rgba(255, 255, 255, 0.35),
+    0 2px 6px rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 轮毂上的红色正位标记：转动时最直观 */
+.steer-hub-mark {
+  width: 5px;
+  height: 16px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, #ff6b6b, #c62828);
+  box-shadow: 0 0 6px rgba(255, 77, 77, 0.8);
+}
+
+/* 轮辋顶部红条：看得见方向盘转了多少 */
+.steer-top-mark {
+  position: absolute;
+  top: 3px;
+  left: 50%;
+  width: 16px;
+  height: 7px;
+  margin-left: -8px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #ff8a80, #d32f2f);
+  box-shadow: 0 0 8px rgba(255, 77, 77, 0.85), inset 0 -1px 0 rgba(0, 0, 0, 0.4);
+}
+
+/* 转角读数 */
+.steer-readout {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 14px;
+  border-radius: 20px;
+  background: linear-gradient(180deg, #1e222a, #101216);
+  border: 1px solid var(--panel-edge);
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.7);
+}
+
+.steer-readout-label {
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: #7d8794;
+}
+
+.steer-readout-value {
+  font-family: 'Courier New', monospace;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--cyan);
+  text-shadow: 0 0 10px rgba(53, 214, 255, 0.6);
+  min-width: 46px;
+  text-align: right;
+}
+
+/* 漂移时方向盘轻微抖动（力反馈错觉） */
+.dashboard.drifting .steer-wheel {
+  animation: wheelShake 0.09s linear infinite;
+}
+
+@keyframes wheelShake {
+  0% { filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.65)); }
+  50% { filter: drop-shadow(0 6px 14px rgba(255, 87, 34, 0.55)); }
+  100% { filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.65)); }
+}
+
+/* 金属拨动开关 */
+.btn-calibrate {
+  padding: 9px 22px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  color: #b7bfca;
+  background: linear-gradient(180deg, #333941, #1b1e24);
+  border: 1px solid #454b54;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 3px 0 #0e1014,
+    0 5px 12px rgba(0, 0, 0, 0.55);
+  transition: transform 0.06s, box-shadow 0.06s, color 0.15s, border-color 0.15s;
+}
+
+.btn-calibrate:active {
+  transform: translateY(2px);
+  color: var(--cyan);
+  border-color: var(--cyan);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 0 0 #0e1014, 0 1px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* ========== 挡位闸 ========== */
+.gear-shifter {
+  padding: 8px 10px;
+  border-radius: 10px;
+  background:
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.02) 0 1px, transparent 1px 3px),
+    linear-gradient(180deg, #23272e, #14171c);
+  border: 1px solid var(--panel-edge);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    inset 0 -2px 6px rgba(0, 0, 0, 0.5);
+}
+
+.gear-label {
+  font-size: 9px;
+  color: #7d8794;
+  text-align: center;
+  margin-bottom: 6px;
+  letter-spacing: 3px;
+}
+
+/* 挡位闸槽：一条横向导轨 */
+.gear-buttons {
+  position: relative;
+  display: flex;
+  gap: 5px;
+  justify-content: center;
+  padding: 5px;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #07080a, #12141a);
+  box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.9), 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.gear-btn {
+  position: relative;
+  flex: 1;
+  max-width: 50px;
+  height: 40px;
+  border-radius: 6px;
+  font-size: 15px;
+  font-weight: 800;
+  font-family: 'Courier New', monospace;
+  color: #8b939e;
+  background: linear-gradient(180deg, #333941, #1b1e24);
+  border: 1px solid #3d434c;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 3px 0 #0b0d10,
+    0 4px 8px rgba(0, 0, 0, 0.5);
+  transition: transform 0.06s, box-shadow 0.06s, background 0.15s, color 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.gear-btn:active {
+  transform: translateY(2px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 1px 0 #0b0d10;
+}
+
+/* 入挡：金属推入闸槽 + 指示灯光 */
+.gear-btn.active {
+  transform: translateY(3px);
+  color: #eaf6ff;
+  background: linear-gradient(180deg, #2b6ea8, #164063);
+  border-color: #4a9eff;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.25),
+    0 0 0 #0b0d10,
+    0 0 14px rgba(74, 158, 255, 0.55);
+}
+
+.gear-btn[data-gear="-1"] { color: #ff8a80; }
+.gear-btn[data-gear="-1"].active {
+  background: linear-gradient(180deg, #a83232, #5d1414);
+  border-color: #ff5252;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 0 14px rgba(255, 82, 82, 0.6);
+}
+
+.gear-btn[data-gear="0"] { color: #ffd54f; }
+.gear-btn[data-gear="0"].active {
+  background: linear-gradient(180deg, #a87a1e, #5d420a);
+  border-color: #ffb300;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 0 14px rgba(255, 179, 0, 0.6);
+}
+
+/* ========== 铰接踏板 ========== */
+.dash-bottom {
+  padding-top: 2px;
+}
+
+.pedal-group {
+  display: flex;
+  gap: 10px;
+}
+
+.pedal {
+  flex: 1;
+  position: relative;
+  border-radius: 10px;
+  padding: 6px 6px 0;
+  background:
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.02) 0 1px, transparent 1px 3px),
+    linear-gradient(180deg, #20242b, #121419);
+  border: 1px solid var(--panel-edge);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 3px 10px rgba(0, 0, 0, 0.5);
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.pedal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 4px 5px;
+}
+
+.pedal-name {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: #8b939e;
+}
+
+.pedal-readout {
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  font-weight: 800;
+  color: #6a737f;
+  min-width: 34px;
+  text-align: right;
+  transition: color 0.12s, text-shadow 0.12s;
+}
+
+.pedal-brake .pedal-readout { color: #ff8a80; text-shadow: 0 0 8px rgba(255, 77, 77, 0.35); }
+.pedal-throttle .pedal-readout { color: #86efac; text-shadow: 0 0 8px rgba(74, 222, 128, 0.35); }
+
+/* 行程轨道 */
+.pedal-track {
+  position: relative;
+  height: min(30vh, 190px);
+  margin: 0 auto 8px;
+  width: 100%;
+  max-width: 110px;
+  overflow: hidden;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #07080a, #101216);
+  box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.9);
+}
+
+/* 导轨刻度线 */
+.pedal-rail {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.12) 0 1px,
+    transparent 1px 12.5%
+  );
+  pointer-events: none;
+}
+
+/* 行程油量条 */
+.pedal-fill {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 0%;
+  transition: height 0.05s linear;
+  opacity: 0.85;
+}
+
+.pedal-brake .pedal-fill {
+  background: linear-gradient(0deg, #7f1414, #ff5252);
+  box-shadow: 0 0 18px rgba(255, 77, 77, 0.6);
+}
+
+.pedal-throttle .pedal-fill {
+  background: linear-gradient(0deg, #12603a, #4ade80);
+  box-shadow: 0 0 18px rgba(74, 222, 128, 0.6);
+}
+
+/*
+ * 踏板总成：绕顶部铰点向下摆动。
+ * --pedal 由 JS 写入（0~1），CSS 负责所有机械动作。
+ */
+.pedal-thumb {
+  position: absolute;
+  left: 50%;
+  bottom: 0%;
+  width: 74px;
+  margin-left: -37px;
+  height: 74px;
+  transition: bottom 0.05s linear;
+  pointer-events: none;
+  transform-origin: 50% -18px;
+  transform: rotate(calc(var(--pedal, 0) * 9deg));
+}
+
+/* 铰点：螺栓 */
+.pedal-hinge {
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  width: 18px;
+  height: 18px;
+  margin-left: -9px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 32%, #cfd6e0, #6c737d 55%, #2b3037);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.6), 0 2px 5px rgba(0, 0, 0, 0.7);
+}
+
+/* 摇臂 */
+.pedal-arm {
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  width: 10px;
+  height: 34px;
+  margin-left: -5px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #2b3037, #9aa2ad 45%, #4a5058 70%, #23272e);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+
+/* 踏板面：橡胶防滑纹 */
+.pedal-plate {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 74px;
+  height: 34px;
+  border-radius: 7px;
+  background:
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.14) 0 3px, rgba(0, 0, 0, 0.25) 3px 8px),
+    linear-gradient(180deg, #3d434c, #1b1e24);
+  border: 1px solid #0a0b0e;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -3px 6px rgba(0, 0, 0, 0.55),
+    0 3px 8px rgba(0, 0, 0, 0.6);
+}
+
+.pedal-brake .pedal-plate {
+  border-top: 2px solid rgba(255, 77, 77, 0.65);
+}
+
+.pedal-throttle .pedal-plate {
+  border-top: 2px solid rgba(74, 222, 128, 0.65);
+}
+
+/* 踩到底：金属被压亮 */
+.pedal[data-full='1'] .pedal-plate {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    inset 0 -3px 6px rgba(0, 0, 0, 0.5),
+    0 0 16px rgba(255, 255, 255, 0.35);
+}
+
+/* 窄屏自适应：横屏手机 */
+@media (max-height: 620px) {
+  .pedal-track { height: min(24vh, 130px); }
+  .pedal-thumb { width: 60px; margin-left: -30px; height: 60px; }
+  .pedal-plate { width: 60px; height: 28px; }
+  .steer-wheel { width: min(30vw, 18vh, 130px); height: min(30vw, 18vh, 130px); }
+  .steer-hub { width: 32px; height: 32px; margin: -16px 0 0 -16px; }
+  .gear-btn { height: 34px; font-size: 13px; }
+}

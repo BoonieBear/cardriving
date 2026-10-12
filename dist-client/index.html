@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <title>WebCarSim - 陀螺仪赛车</title>
+  <script type="module" crossorigin src="./assets/index-DbDCNZ99.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-EFnbWbl_.css">
+</head>
+<body>
+  <!-- 模式选择遮罩（初始显示） -->
+  <div id="mode-selector" class="mode-selector">
+    <div class="mode-selector-inner">
+      <h1 class="mode-title">WebCarSim</h1>
+      <p class="mode-subtitle">多屏互联陀螺仪赛车</p>
+      <div class="mode-buttons">
+        <button id="btn-host" class="mode-btn mode-btn-host">
+          <span class="mode-btn-icon">🖥️</span>
+          <span class="mode-btn-text">大屏主机模式</span>
+          <span class="mode-btn-desc">电脑浏览器 · 3D 渲染 · 房间管理</span>
+        </button>
+        <button id="btn-controller" class="mode-btn mode-btn-controller">
+          <span class="mode-btn-icon">📱</span>
+          <span class="mode-btn-text">手机控制器模式</span>
+          <span class="mode-btn-desc">手机浏览器 · 陀螺仪 · 触控操控</span>
+        </button>
+      </div>
+      <p class="mode-tip">提示：也可通过 URL 参数 ?mode=host 或 ?mode=controller 直接进入</p>
+    </div>
+  </div>
+
+  <!-- ========== 大屏主机端 UI ========== -->
+  <div id="host-ui" class="host-ui hidden">
+    <!-- 3D 画布容器 -->
+    <div id="canvas-container"></div>
+
+    <!-- 房间信息面板（连接前显示） -->
+    <div id="room-panel" class="room-panel">
+      <div class="room-panel-header">
+        <span class="room-panel-title">房间连接</span>
+        <span id="room-connection-state" class="room-connection-state waiting">等待控制器</span>
+      </div>
+      <div class="room-panel-body">
+        <div class="room-code-row">
+          <span class="room-code-label">房间码</span>
+          <span id="room-code-display" class="room-code-display">------</span>
+        </div>
+        <div class="room-secret-row">
+          <span class="room-secret-label">密钥</span>
+          <div class="room-secret-input-group">
+            <input id="room-secret-input" type="text" class="room-secret-input" placeholder="设置房间密钥" maxlength="32" />
+            <button id="btn-apply-secret" class="btn-apply-secret">创建/更新</button>
+          </div>
+        </div>
+        <div class="room-hint">
+          手机端输入以上「房间码 + 密钥」即可连接
+        </div>
+        <!-- 一键连接二维码 -->
+        <div id="qr-container" class="qr-container hidden">
+          <div class="qr-title">扫码一键连接</div>
+          <canvas id="qr-canvas" class="qr-canvas"></canvas>
+          <div id="qr-url-text" class="qr-url-text"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 右上角帧率显示 -->
+    <div id="fps-display" class="fps-display">FPS: --</div>
+
+    <!-- 驾驶模式切换栏（手动 / 辅助驾驶 / 全自动驾驶） -->
+    <div id="drive-mode-bar" class="drive-mode-bar" data-mode="manual">
+      <button class="drive-mode-btn active" data-mode="manual">
+        <span class="drive-mode-icon">🕹️</span>
+        <span class="drive-mode-name">手动</span>
+      </button>
+      <button class="drive-mode-btn" data-mode="assist">
+        <span class="drive-mode-icon">🛡️</span>
+        <span class="drive-mode-name">辅助驾驶</span>
+      </button>
+      <button class="drive-mode-btn" data-mode="auto">
+        <span class="drive-mode-icon">🤖</span>
+        <span class="drive-mode-name">全自动驾驶</span>
+      </button>
+      <div class="drive-mode-hint">按 M 键循环切换 · 0/1/2 直接选择 · C 键切换视角</div>
+    </div>
+
+    <!-- 视角切换提示（屏幕中央短暂显示） -->
+    <div id="camera-toast" class="drive-mode-toast hidden" data-mode="manual">车尾跟随</div>
+
+    <!-- 驾驶模式切换提示（屏幕中央短暂显示） -->
+    <div id="drive-mode-toast" class="drive-mode-toast hidden" data-mode="manual">手动驾驶</div>
+
+    <!-- 开发者调试面板（F12 切换） -->
+    <div id="debug-panel" class="debug-panel hidden">
+      <div class="debug-header">
+        <span>开发者调试面板</span>
+        <span class="debug-hint">按 F12 关闭</span>
+      </div>
+      <div class="debug-body">
+        <div class="debug-row"><span class="debug-label">房间码</span><span id="debug-room-code" class="debug-value">--</span></div>
+        <div class="debug-row"><span class="debug-label">密钥</span><span id="debug-secret" class="debug-value">--</span></div>
+        <div class="debug-row"><span class="debug-label">连接状态</span><span id="debug-connect-state" class="debug-value">未连接</span></div>
+        <div class="debug-row"><span class="debug-label">在线设备</span><span id="debug-device-count" class="debug-value">0</span></div>
+        <div class="debug-row"><span class="debug-label">帧率</span><span id="debug-fps" class="debug-value">--</span></div>
+        <div class="debug-divider"></div>
+        <div class="debug-row"><span class="debug-label">驾驶模式</span><span id="debug-drive-mode" class="debug-value">手动驾驶</span></div>
+        <div class="debug-row"><span class="debug-label">车速</span><span id="debug-speed" class="debug-value">0 km/h</span></div>
+        <div class="debug-row"><span class="debug-label">挡位</span><span id="debug-gear" class="debug-value">1</span></div>
+        <div class="debug-row"><span class="debug-label">转向</span><span id="debug-steer" class="debug-value">0.00</span></div>
+        <div class="debug-row"><span class="debug-label">油门</span><span id="debug-throttle" class="debug-value">0.00</span></div>
+        <div class="debug-row"><span class="debug-label">刹车</span><span id="debug-brake" class="debug-value">0.00</span></div>
+        <div class="debug-row"><span class="debug-label">漂移</span><span id="debug-drift" class="debug-value">否</span></div>
+        <div class="debug-row"><span class="debug-label">滑移量</span><span id="debug-slip" class="debug-value">0.0°</span></div>
+        <div class="debug-row"><span class="debug-label">漂移强度</span><span id="debug-drift-intensity" class="debug-value">0.00</span></div>
+        <div class="debug-row"><span class="debug-label">相机视角</span><span id="debug-camera" class="debug-value">车尾跟随</span></div>
+      </div>
+    </div>
+
+    <!-- 断线提示 -->
+    <div id="disconnect-toast" class="disconnect-toast hidden">
+      控制器已断开 · 已切换为自动驾驶
+    </div>
+  </div>
+
+  <!-- ========== 手机控制器端 UI ========== -->
+  <div id="controller-ui" class="controller-ui hidden">
+    <!-- 连接面板 -->
+    <div id="conn-panel" class="conn-panel">
+      <h2 class="conn-title">连接大屏</h2>
+      <div class="conn-field">
+        <label class="conn-label">房间码</label>
+        <input id="conn-room-code" type="text" class="conn-input" placeholder="6位数字" maxlength="6" inputmode="numeric" />
+      </div>
+      <div class="conn-field">
+        <label class="conn-label">密钥</label>
+        <input id="conn-secret" type="text" class="conn-input" placeholder="房间密钥" maxlength="32" />
+      </div>
+      <div id="conn-error" class="conn-error hidden"></div>
+      <button id="btn-connect" class="btn-connect">连接</button>
+      <div class="conn-tip">确保手机与电脑在同一网络，或服务已部署到公网</div>
+    </div>
+
+    <!-- 仪表盘（连接后显示） -->
+    <div id="dashboard" class="dashboard hidden">
+      <!-- 顶部：金属面板 + 数字仪表 -->
+      <div class="dash-top">
+        <div class="dash-connect">
+          <span id="dash-connect-dot" class="connect-dot connected"></span>
+          <span id="dash-connect-text">已连接</span>
+        </div>
+        <div class="dash-speed">
+          <span id="dash-speed-value" class="dash-speed-value">0</span>
+          <span class="dash-speed-unit">km/h</span>
+        </div>
+        <div class="dash-gear">
+          <span class="dash-gear-label">挡位</span>
+          <span id="dash-gear-value" class="dash-gear-value">1</span>
+        </div>
+      </div>
+
+      <!-- 驾驶模式指示徽标（非手动时显示） -->
+      <div id="dash-drive-mode" class="dash-drive-mode hidden" data-mode="manual">手动驾驶</div>
+
+      <!-- 驾驶模式切换（手机远程控制大屏） -->
+      <div class="ctrl-drive-mode">
+        <button class="ctrl-drive-mode-btn active" data-mode="manual">手动</button>
+        <button class="ctrl-drive-mode-btn" data-mode="assist">辅助驾驶</button>
+        <button class="ctrl-drive-mode-btn" data-mode="auto">全自动驾驶</button>
+      </div>
+
+      <!-- 漂移提示 -->
+      <div id="dash-drift-indicator" class="dash-drift hidden">DRIFT</div>
+
+      <!-- 中部：方向盘 -->
+      <div class="dash-middle">
+        <div class="steer-cluster">
+          <div class="steer-scale"></div>
+          <div id="steer-pointer" class="steer-wheel">
+            <div class="steer-rim"></div>
+            <div class="steer-spoke steer-spoke-l"></div>
+            <div class="steer-spoke steer-spoke-r"></div>
+            <div class="steer-spoke steer-spoke-b"></div>
+            <div class="steer-hub">
+              <span class="steer-hub-mark"></span>
+            </div>
+            <div class="steer-top-mark"></div>
+          </div>
+          <div class="steer-readout">
+            <span class="steer-readout-label">前轮转角</span>
+            <span id="steer-value-text" class="steer-readout-value">0°</span>
+          </div>
+        </div>
+        <button id="btn-calibrate" class="btn-calibrate">校准陀螺仪</button>
+      </div>
+
+      <!-- 手动变速箱：金属挡位闸 -->
+      <div class="gear-shifter">
+        <div class="gear-label">挡位闸 · GEAR GATE</div>
+        <div class="gear-buttons">
+          <button class="gear-btn" data-gear="-1">R</button>
+          <button class="gear-btn" data-gear="0">N</button>
+          <button class="gear-btn active" data-gear="1">1</button>
+          <button class="gear-btn" data-gear="2">2</button>
+          <button class="gear-btn" data-gear="3">3</button>
+          <button class="gear-btn" data-gear="4">4</button>
+          <button class="gear-btn" data-gear="5">5</button>
+        </div>
+      </div>
+
+      <!-- 底部：铰接踏板 -->
+      <div class="dash-bottom">
+        <div class="pedal-group">
+          <div id="btn-brake" class="pedal pedal-brake">
+            <div class="pedal-head">
+              <span class="pedal-name">BRAKE</span>
+              <span id="brake-readout" class="pedal-readout">0%</span>
+            </div>
+            <div class="pedal-track">
+              <div class="pedal-rail"></div>
+              <div id="brake-bar-fill" class="pedal-fill"></div>
+              <div id="brake-slider" class="pedal-thumb">
+                <span class="pedal-hinge"></span>
+                <span class="pedal-arm"></span>
+                <span class="pedal-plate"></span>
+              </div>
+            </div>
+          </div>
+          <div id="btn-throttle" class="pedal pedal-throttle">
+            <div class="pedal-head">
+              <span class="pedal-name">THROTTLE</span>
+              <span id="throttle-readout" class="pedal-readout">0%</span>
+            </div>
+            <div class="pedal-track">
+              <div class="pedal-rail"></div>
+              <div id="throttle-bar-fill" class="pedal-fill"></div>
+              <div id="throttle-slider" class="pedal-thumb">
+                <span class="pedal-hinge"></span>
+                <span class="pedal-arm"></span>
+                <span class="pedal-plate"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
